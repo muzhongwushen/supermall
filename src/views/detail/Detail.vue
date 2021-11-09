@@ -10,6 +10,8 @@
       <detail-comment-info ref="comment"  :comment-info="commentInfo"/>
       <goods-list :goods="recommends" ref="recommend"/>
     </scroll>
+    <detail-bottom-bar @addToCart="addToCart"/>
+    <back-top @click.native="backClick" v-show="isShowBackTop"/>
   </div>
 </template>
 
@@ -23,9 +25,11 @@
     import DetailParamInfo from "./childComps/DetailParamInfo";
     import DetailCommentInfo from "./childComps/DetailCommentInfo";
     import GoodsList from "../../components/content/goods/GoodsList";
+    import DetailBottomBar from "./childComps/DetailBottomBar";
     import {debounce} from "common/utils";
     import {getDetail, Goods, Shop, GoodsParam, getRecommend} from "network/detail";
-    import {itemListenerMixin} from "common/mixin";
+    import {itemListenerMixin,backTopMixin} from "common/mixin";
+
 
     export default {
         name: "Detail",
@@ -38,6 +42,7 @@
             DetailParamInfo,
             DetailCommentInfo,
             GoodsList,
+            DetailBottomBar,
             Scroll,
 
         },
@@ -53,11 +58,13 @@
                 recommends: [],
                 themeTopYs:[],
                 getThemeTopY:null,
-                currentIndex:0
+                currentIndex:0,
+
 
             }
         },
-        mixins:[itemListenerMixin],
+        mixins:[itemListenerMixin,backTopMixin
+        ],
         created() {
             this.iid = this.$route.params.iid;
 
@@ -114,6 +121,8 @@
                 this.$refs.scroll.scrollTo(0,this.themeTopYs[index],100)
             },
             contentScroll(position){
+                //回到顶部
+                this.isShowBackTop= (-position.y)>1000
 
                const positionY=-position.y
                 //2.对比
@@ -131,6 +140,19 @@
                      this.$refs.nav.currentIndex =this.currentIndex
                  }
                 }
+            },
+            addToCart(){
+                //1.获取商品信息
+                const product ={}
+                product.image=this.topImages[0]
+                product.title=this.goods.title
+                product.desc=this.goods.desc
+                product.price=this.goods.realPrice;
+                product.iid=this.iid;
+
+               // this.$store.commit('addCart',product)
+                this.$store.dispatch('addCart',product)
+
             }
         },
         mounted() {
@@ -151,7 +173,8 @@
   }
 
   .content {
-    height: calc(100% - 44px);
+    overflow: hidden;
+    height: calc(100% - 44px - 49px);
   }
 
   .detail-nav {
