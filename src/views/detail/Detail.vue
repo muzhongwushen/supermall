@@ -29,6 +29,7 @@
     import {debounce} from "common/utils";
     import {getDetail, Goods, Shop, GoodsParam, getRecommend} from "network/detail";
     import {itemListenerMixin,backTopMixin} from "common/mixin";
+    import {mapActions} from 'vuex'
 
 
     export default {
@@ -112,6 +113,7 @@
                 this.themeTopYs.push(-Number.MAX_VALUE);
             },100)
         }, methods: {
+            ...mapActions(["addCart"]),
             imageLoad() {
                 this.$refs.scroll.refresh()
                 this.getThemeTopY()
@@ -151,7 +153,12 @@
                 product.iid=this.iid;
 
                // this.$store.commit('addCart',product)
-                this.$store.dispatch('addCart',product)
+               //  this.$store.dispatch('addCart',product).then(res=>{
+                //
+                //  })
+                this.addCart(product).then(res=>{
+                    this.$toast.show(res)
+                })
 
             }
         },
